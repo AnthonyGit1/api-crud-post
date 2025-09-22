@@ -63,7 +63,7 @@
 								{
 									"key": "avatar",
 									"type": "file",
-									"src": "/path/to/avatar.jpg",
+									"src": [],
 									"description": "Imagen de avatar del usuario (JPEG, PNG, GIF, WebP - máx 5MB)"
 								}
 							]
@@ -144,7 +144,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\\n    \"email\": \"juan.perez@ejemplo.com\",\\n    \"password\": \"123456\"\\n}"
+							"raw": "{\n    \"email\": \"juan.perez@ejemplo.com\",\n    \"password\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/login",
@@ -246,7 +251,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\\n    \"title\": \"Mi primer post con autenticación\",\\n    \"text\": \"Este es el contenido de mi primer post creado con el sistema de autenticación implementado\",\\n    \"author\": \"Juan Pérez\"\\n}"
+							"raw": "{\n    \"title\": \"Mi primer post con autenticación\",\n    \"text\": \"Este es el contenido de mi primer post creado con el sistema de autenticación implementado\",\n    \"author\": \"Juan Pérez\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/posts",
@@ -327,7 +337,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\\n    \"title\": \"Post actualizado con autenticación\",\\n    \"text\": \"Contenido actualizado del post con el sistema de autenticación\"\\n}"
+							"raw": "{\n    \"title\": \"Post actualizado con autenticación\",\n    \"text\": \"Contenido actualizado del post con el sistema de autenticación\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/posts/{{post_id}}",
