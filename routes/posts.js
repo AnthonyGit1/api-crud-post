@@ -8,19 +8,21 @@ const {
   deletePost
 } = require('../controllers/postController');
 
-// POST /api/posts - Crear un nuevo post
-router.post('/', createPost);
+const { authenticateToken } = require('../middleware/auth');
 
-// GET /api/posts - Obtener todos los posts
-router.get('/', getAllPosts);
+// POST /api/posts - Crear un nuevo post (requiere autenticación)
+router.post('/', authenticateToken, createPost);
 
-// GET /api/posts/:id - Obtener un post por ID
-router.get('/:id', getPostById);
+// GET /api/posts - Obtener todos los posts (requiere autenticación)
+router.get('/', authenticateToken, getAllPosts);
 
-// PATCH /api/posts/:id - Actualizar un post
-router.patch('/:id', updatePost);
+// GET /api/posts/:id - Obtener un post por ID (requiere autenticación)
+router.get('/:id', authenticateToken, getPostById);
 
-// DELETE /api/posts/:id - Eliminar un post
-router.delete('/:id', deletePost);
+// PATCH /api/posts/:id - Actualizar un post (requiere autenticación)
+router.patch('/:id', authenticateToken, updatePost);
+
+// DELETE /api/posts/:id - Eliminar un post (requiere autenticación)
+router.delete('/:id', authenticateToken, deletePost);
 
 module.exports = router;

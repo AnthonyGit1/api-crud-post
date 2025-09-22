@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./config/db.config');
 const postRoutes = require('./routes/posts');
+const userRoutes = require('./routes/users');
 
 // Crear la aplicación Express
 const app = express();
@@ -20,6 +21,8 @@ app.use((req, res, next) => {
 
 // Rutas
 app.use('/api/posts', postRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api', userRoutes); // Para el endpoint /api/login
 
 // Ruta de prueba
 app.get('/api/health', (req, res) => {

@@ -1,0 +1,349 @@
+{
+	"info": {
+		"_postman_id": "e8f45b12-3a4c-4d5e-b6f7-8c9d0e1f2a3b",
+		"name": "Posts API CRUD con Autenticación",
+		"description": "API CRUD para Posts con sistema de autenticación de usuarios usando JWT. Incluye registro, login y protección de endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Autenticación",
+			"item": [
+				{
+					"name": "Registrar Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Juan Pérez\",\n    \"email\": \"juan.perez@ejemplo.com\",\n    \"password\": \"123456\",\n    \"bio\": \"Desarrollador de software apasionado por la tecnología\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Registra un nuevo usuario en el sistema. Los campos name, email y password son obligatorios."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('auth_token', response.token);",
+									"    pm.environment.set('user_id', response.user.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"juan.perez@ejemplo.com\",\n    \"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "Autentica al usuario y devuelve un token JWT para acceder a los endpoints protegidos."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Perfil Usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile"
+							]
+						},
+						"description": "Obtiene el perfil del usuario autenticado. Requiere token JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Usuarios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Lista todos los usuarios activos del sistema. Requiere autenticación."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints relacionados con la autenticación y gestión de usuarios"
+		},
+		{
+			"name": "Posts",
+			"item": [
+				{
+					"name": "Crear Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Mi primer post con autenticación\",\n    \"text\": \"Este es el contenido de mi primer post después de implementar el sistema de autenticación\",\n    \"author\": \"Juan Pérez\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/posts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts"
+							]
+						},
+						"description": "Crea un nuevo post. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Todos los Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/posts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts"
+							]
+						},
+						"description": "Obtiene todos los posts del sistema. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Post por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/posts/{{post_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								"{{post_id}}"
+							]
+						},
+						"description": "Obtiene un post específico por su ID. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Post actualizado con autenticación\",\n    \"text\": \"Contenido actualizado del post\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/posts/{{post_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								"{{post_id}}"
+							]
+						},
+						"description": "Actualiza un post existente. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/posts/{{post_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								"{{post_id}}"
+							]
+						},
+						"description": "Elimina un post del sistema. Requiere autenticación JWT."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints CRUD para la gestión de posts. Todos requieren autenticación JWT."
+		},
+		{
+			"name": "Sistema",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						},
+						"description": "Verifica que la API esté funcionando correctamente. No requiere autenticación."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints del sistema para verificar el estado de la API"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "post_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
