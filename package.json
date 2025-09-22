@@ -1,0 +1,22 @@
+{
+  "name": "actividad-2-as",
+  "version": "1.0.0",
+  "description": "API CRUD para modelo Post con Express y MongoDB en memoria",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["api", "crud", "express", "mongodb", "mongoose"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "mongodb-memory-server": "^8.15.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
