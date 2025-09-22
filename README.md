@@ -1,16 +1,28 @@
-# API CRUD Posts con Autenticación
+# API CRUD Posts con Autenticación y Avatar - Actividad 4
 
-API REST desarrollada con Express.js y MongoDB (en memoria) que implementa un sistema CRUD completo para Posts con autenticación de usuarios mediante JWT (JSON Web Tokens).
+API REST desarrollada con Express.js y MongoDB (en memoria) que implementa un sistema CRUD completo para Posts con autenticación de usuarios mediante JWT, confirmación de registro por email y upload de avatar de usuario.
 
 ## 🚀 Características
 
-- ✅ CRUD completo para Posts (Crear, Leer, Actualizar, Eliminar)
-- 🔐 Sistema de autenticación con JWT
+- ✅ CRUD completo para Posts (Crear, Leer, Actualizar, Elimi## 📝 Notas Importantes
+
+1. **Base de datos en memoria**: Los datos se pierden al reiniciar el servidor
+2. **Clave JWT**: En producción, usar una clave secreta segura en variables de entorno
+3. **HTTPS**: En producción, usar HTTPS para proteger los tokens
+4. **Validación**: Todos los campos tienen validaciones del lado del servidor
+5. **Contraseñas**: Se cifran automáticamente antes de guardar en la base de datos
+6. **Avatares**: Se almacenan en disco en `uploads/avatars/` con nombres únicos
+7. **Activación**: Los usuarios deben activar su cuenta antes de poder hacer login
+8. **Archivos**: Solo imágenes permitidas, máximo 5MB por archivo
+9. **Confirmación**: El enlace de activación se proporciona en la respuesta del registro (no se envía email real) 🔐 Sistema de autenticación con JWT
 - 👤 Gestión de usuarios (registro y login)
-- 🔒 Protección de endpoints con middleware de autenticación
+- 📧 Confirmación de registro vía enlace de activación
+- �️ Upload de avatar de usuario con multer
+- �🔒 Protección de endpoints con middleware de autenticación
 - 📝 Validación de datos con Mongoose
 - 🔑 Cifrado de contraseñas con bcryptjs
 - 💾 Base de datos MongoDB en memoria
+- 📁 Servir archivos estáticos (avatares)
 - 📮 Colección Postman incluida para testing
 
 ## 🛠️ Tecnologías Utilizadas
@@ -21,6 +33,7 @@ API REST desarrollada con Express.js y MongoDB (en memoria) que implementa un si
 - **Mongoose** - ODM para MongoDB
 - **bcryptjs** - Librería para cifrado de contraseñas
 - **jsonwebtoken** - Implementación de JWT para Node.js
+- **multer** - Middleware para manejo de archivos multipart/form-data
 - **CORS** - Middleware para habilitar CORS
 
 ## 📋 Requisitos
@@ -50,18 +63,56 @@ El servidor se ejecutará en `http://localhost:8000`
 
 ## 📚 Endpoints de la API
 
-### 🔐 Autenticación
+### 🔐 Autenticación y Gestión de Usuarios
 
-#### Registrar Usuario
+#### Registrar Usuario (con avatar)
 ```http
 POST /api/users
-Content-Type: application/json
+Content-Type: multipart/form-data
 
+Form Data:
+- name: "Juan Pérez"
+- email: "juan.perez@ejemplo.com" 
+- password: "123456"
+- bio: "Desarrollador de software" (opcional)
+- avatar: [archivo de imagen] (opcional, máx 5MB)
+```
+
+**Respuesta exitosa:**
+```json
 {
-    "name": "Juan Pérez",
-    "email": "juan.perez@ejemplo.com",
-    "password": "123456",
-    "bio": "Desarrollador de software" (opcional)
+    "message": "Usuario creado exitosamente. Por favor, active su cuenta usando el enlace proporcionado.",
+    "user": {
+        "id": "...",
+        "name": "Juan Pérez",
+        "email": "juan.perez@ejemplo.com",
+        "bio": "Desarrollador de software",
+        "avatar": "avatar-1234567890-987654321.jpg",
+        "avatarUrl": "/api/uploads/avatars/avatar-1234567890-987654321.jpg",
+        "active": false,
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z"
+    },
+    "activationUrl": "http://localhost:8000/api/users/activate/abc123..."
+}
+```
+
+#### Activar Cuenta de Usuario
+```http
+GET /api/users/activate/:token
+```
+
+**Respuesta exitosa:**
+```json
+{
+    "message": "Cuenta activada exitosamente. Ya puede iniciar sesión.",
+    "user": {
+        "id": "...",
+        "name": "Juan Pérez",
+        "email": "juan.perez@ejemplo.com",
+        "active": true,
+        "activatedAt": "2024-01-01T00:00:00.000Z"
+    }
 }
 ```
 
@@ -86,6 +137,8 @@ Content-Type: application/json
         "name": "Juan Pérez",
         "email": "juan.perez@ejemplo.com",
         "bio": "Desarrollador de software",
+        "avatar": "avatar-1234567890-987654321.jpg",
+        "avatarUrl": "/api/uploads/avatars/avatar-1234567890-987654321.jpg",
         "active": true,
         "createdAt": "2024-01-01T00:00:00.000Z",
         "updatedAt": "2024-01-01T00:00:00.000Z"
@@ -162,6 +215,13 @@ Authorization: Bearer <token_jwt>
 GET /api/health
 ```
 
+#### Acceder a Avatar de Usuario
+```http
+GET /api/uploads/avatars/:filename
+```
+
+Ejemplo: `GET /api/uploads/avatars/avatar-1234567890-987654321.jpg`
+
 ## 📊 Modelo de Datos
 
 ### Usuario
@@ -172,6 +232,9 @@ GET /api/health
     email: String (requerido, único, formato email),
     password: String (requerido, mínimo 6 caracteres, cifrado),
     bio: String (opcional, máximo 500 caracteres),
+    avatar: String (nombre del archivo de avatar),
+    avatarUrl: String (URL virtual para acceder al avatar),
+    activationToken: String (token para activación de cuenta),
     active: Boolean (default: false),
     createdAt: Date,
     updatedAt: Date
@@ -194,6 +257,8 @@ GET /api/health
 
 - **Cifrado de contraseñas**: Las contraseñas se cifran usando bcryptjs con salt de 10 rounds
 - **JWT**: Los tokens tienen una duración de 24 horas
+- **Upload de archivos**: Solo imágenes permitidas (JPEG, PNG, GIF, WebP), máximo 5MB
+- **Confirmación de email**: Los usuarios deben activar su cuenta antes de poder hacer login
 - **Validación de entrada**: Todos los datos se validan usando esquemas de Mongoose
 - **Protección de endpoints**: Todos los endpoints de Posts requieren autenticación
 - **Headers seguros**: Implementación de CORS
@@ -201,9 +266,13 @@ GET /api/health
 ## 🔑 Autenticación JWT
 
 1. **Registro**: El usuario se registra con email, contraseña y datos personales
-2. **Login**: El usuario envía credenciales y recibe un token JWT
-3. **Autorización**: El token debe incluirse en el header `Authorization: Bearer <token>`
-4. **Validación**: El middleware verifica el token en cada petición protegida
+## 🔑 Flujo de Autenticación y Activación
+
+1. **Registro**: El usuario se registra con email, contraseña, datos personales y avatar opcional
+2. **Activación**: El usuario recibe una URL de activación y debe hacer GET para activar su cuenta
+3. **Login**: Solo usuarios activos pueden hacer login y recibir un token JWT
+4. **Autorización**: El token debe incluirse en el header `Authorization: Bearer <token>`
+5. **Validación**: El middleware verifica el token en cada petición protegida
 
 ### Formato del Token
 El token incluye la siguiente información:
@@ -218,18 +287,45 @@ El token incluye la siguiente información:
 
 ## 📮 Testing con Postman
 
-1. Importa la colección `Posts_API_CRUD_Auth.postman_collection.json` en Postman
+1. Importa la colección `Posts_API_CRUD_Auth_Avatar.postman_collection.json` en Postman
 2. La colección incluye:
    - Variables de entorno pre-configuradas
-   - Scripts automáticos para guardar el token JWT
-   - Ejemplos de todas las peticiones
+   - Scripts automáticos para guardar el token JWT y URL de activación
+   - Ejemplos de todas las peticiones incluyendo upload de archivos
    - Documentación de cada endpoint
+   - Flujo completo: registro → activación → login → uso de API
 
 ### Variables de Entorno
 - `base_url`: http://localhost:8000
 - `auth_token`: Se guarda automáticamente al hacer login
+- `activation_token`: Token extraído automáticamente de la URL de activación
+- `activation_url`: URL completa para activar la cuenta
 - `post_id`: Para usar en operaciones con posts específicos
 - `user_id`: ID del usuario autenticado
+
+### Flujo de Testing Recomendado
+1. **Registrar Usuario**: POST `/api/users` con form-data (incluir avatar)
+2. **Activar Cuenta**: GET `/api/users/activate/{{activation_token}}`
+3. **Login**: POST `/api/login` para obtener token JWT
+4. **Usar API**: Todos los demás endpoints con token en Authorization header
+
+## 🖼️ Gestión de Avatares
+
+### Formatos Soportados
+- JPEG (.jpg, .jpeg)
+- PNG (.png)
+- GIF (.gif)
+- WebP (.webp)
+
+### Restricciones
+- Tamaño máximo: 5MB
+- Solo un archivo por petición
+- El archivo se guarda con nombre único generado automáticamente
+
+### URLs de Acceso
+- Los avatares se sirven en: `/api/uploads/avatars/:filename`
+- El campo `avatarUrl` en el usuario contiene la URL completa
+- Ejemplo: `http://localhost:8000/api/uploads/avatars/avatar-1234567890-987654321.jpg`
 
 ## 🚦 Códigos de Estado HTTP
 
@@ -256,15 +352,19 @@ npm run dev      # Inicia el servidor en modo desarrollo (nodemon)
 │   ├── postController.js    # Controladores de Posts
 │   └── userController.js    # Controladores de Usuarios
 ├── middleware/
-│   └── auth.js              # Middleware de autenticación JWT
+│   ├── auth.js              # Middleware de autenticación JWT
+│   └── upload.js            # Middleware de upload de archivos (multer)
 ├── models/
 │   ├── Post.js              # Modelo de Post
-│   └── User.js              # Modelo de Usuario
+│   └── User.js              # Modelo de Usuario (con avatar y activación)
 ├── routes/
 │   ├── posts.js             # Rutas de Posts
 │   └── users.js             # Rutas de Usuarios
+├── uploads/
+│   └── avatars/             # Directorio para avatares de usuario
 ├── index.js                 # Punto de entrada de la aplicación
 ├── package.json
+├── Posts_API_CRUD_Auth_Avatar.postman_collection.json
 └── README.md
 ```
 

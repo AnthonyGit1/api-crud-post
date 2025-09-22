@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { connectDB } = require('./config/db.config');
 const postRoutes = require('./routes/posts');
 const userRoutes = require('./routes/users');
@@ -12,6 +13,9 @@ const PORT = process.env.PORT || 8000;
 app.use(cors()); // Permitir solicitudes desde cualquier origen
 app.use(express.json()); // Parsear JSON en el body de las peticiones
 app.use(express.urlencoded({ extended: true })); // Parsear datos de formularios
+
+// Servir archivos estáticos (avatares)
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware de logging
 app.use((req, res, next) => {

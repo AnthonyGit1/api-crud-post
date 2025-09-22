@@ -30,6 +30,14 @@ const userSchema = new mongoose.Schema({
     maxlength: [500, 'La biografía no puede tener más de 500 caracteres'],
     default: ''
   },
+  avatar: {
+    type: String,
+    default: null
+  },
+  activationToken: {
+    type: String,
+    default: null
+  },
   active: {
     type: Boolean,
     default: false
@@ -44,12 +52,21 @@ userSchema.virtual('id').get(function() {
   return this._id.toHexString();
 });
 
+// Virtual para generar URL del avatar
+userSchema.virtual('avatarUrl').get(function() {
+  if (this.avatar) {
+    return `/api/uploads/avatars/${this.avatar}`;
+  }
+  return null;
+});
+
 // Asegurar que los virtuals se incluyan cuando se convierta a JSON
 userSchema.set('toJSON', {
   virtuals: true,
   transform: function(doc, ret) {
     delete ret._id;
     delete ret.password;
+    delete ret.activationToken;
     return ret;
   }
 });

@@ -1,7 +1,7 @@
 {
-  "name": "actividad-3-as",
-  "version": "2.0.0",
-  "description": "API CRUD para modelo Post con Express, MongoDB en memoria y sistema de autenticación JWT",
+  "name": "actividad-4-as",
+  "version": "3.0.0",
+  "description": "API CRUD para modelo Post con Express, MongoDB en memoria, sistema de autenticación JWT, confirmación de registro y upload de avatar",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -15,7 +15,11 @@
     "mongoose",
     "jwt",
     "authentication",
-    "bcrypt"
+    "bcrypt",
+    "multer",
+    "avatar",
+    "upload",
+    "activation"
   ],
   "author": "",
   "license": "ISC",
@@ -25,7 +29,8 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb-memory-server": "^8.15.1",
-    "mongoose": "^7.5.0"
+    "mongoose": "^7.5.0",
+    "multer": "^2.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

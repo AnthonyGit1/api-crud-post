@@ -1,0 +1,474 @@
+{
+	"info": {
+		"_postman_id": "a4b5c6d7-e8f9-4321-9876-123456789abc",
+		"name": "Posts API CRUD con Autenticación y Avatar - Actividad 4",
+		"description": "Colección completa para probar la API CRUD de Posts con sistema de autenticación JWT, confirmación de registro vía email y upload de avatar de usuario",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Autenticación",
+			"item": [
+				{
+					"name": "Registrar Usuario (con avatar)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('user_id', jsonData.user.id);",
+									"    pm.environment.set('activation_url', jsonData.activationUrl);",
+									"    ",
+									"    // Extraer token de activación de la URL",
+									"    const url = jsonData.activationUrl;",
+									"    const token = url.split('/').pop();",
+									"    pm.environment.set('activation_token', token);",
+									"    ",
+									"    console.log('Usuario registrado. URL de activación:', jsonData.activationUrl);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Juan Pérez",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "juan.perez@ejemplo.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "123456",
+									"type": "text"
+								},
+								{
+									"key": "bio",
+									"value": "Desarrollador Full Stack especializado en Node.js",
+									"type": "text"
+								},
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/path/to/avatar.jpg",
+									"description": "Imagen de avatar del usuario (JPEG, PNG, GIF, WebP - máx 5MB)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Registra un nuevo usuario con avatar opcional. El usuario se crea inactivo y requiere activación vía enlace."
+					},
+					"response": []
+				},
+				{
+					"name": "Activar Cuenta de Usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('Cuenta activada exitosamente');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/activate/{{activation_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"activate",
+								"{{activation_token}}"
+							]
+						},
+						"description": "Activa la cuenta del usuario usando el token de activación obtenido al registrarse."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Usuario",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('auth_token', jsonData.token);",
+									"    pm.environment.set('user_id', jsonData.user.id);",
+									"    console.log('Login exitoso. Token guardado.');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\\n    \"email\": \"juan.perez@ejemplo.com\",\\n    \"password\": \"123456\"\\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "Inicia sesión con email y contraseña. Solo funciona si la cuenta está activada."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Perfil Usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/profile",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"profile"
+							]
+						},
+						"description": "Obtiene el perfil del usuario autenticado, incluyendo la URL del avatar."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Usuarios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Lista todos los usuarios activos (requiere autenticación)."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints relacionados con autenticación de usuarios, registro con avatar y activación de cuenta."
+		},
+		{
+			"name": "Posts (Requieren Autenticación)",
+			"item": [
+				{
+					"name": "Crear Post",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.environment.set('post_id', jsonData.id);",
+									"    console.log('Post creado con ID:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\\n    \"title\": \"Mi primer post con autenticación\",\\n    \"text\": \"Este es el contenido de mi primer post creado con el sistema de autenticación implementado\",\\n    \"author\": \"Juan Pérez\"\\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/posts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts"
+							]
+						},
+						"description": "Crea un nuevo post. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Todos los Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/posts",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts"
+							]
+						},
+						"description": "Obtiene todos los posts. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Post por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/posts/{{post_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								"{{post_id}}"
+							]
+						},
+						"description": "Obtiene un post específico por su ID. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Post",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\\n    \"title\": \"Post actualizado con autenticación\",\\n    \"text\": \"Contenido actualizado del post con el sistema de autenticación\"\\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/posts/{{post_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								"{{post_id}}"
+							]
+						},
+						"description": "Actualiza un post existente. Requiere autenticación JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/posts/{{post_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								"{{post_id}}"
+							]
+						},
+						"description": "Elimina un post. Requiere autenticación JWT."
+					},
+					"response": []
+				}
+			],
+			"description": "Operaciones CRUD para posts. Todos los endpoints requieren autenticación JWT."
+		},
+		{
+			"name": "Sistema",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						},
+						"description": "Verifica que la API esté funcionando correctamente."
+					},
+					"response": []
+				},
+				{
+					"name": "Ver Avatar de Usuario",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/uploads/avatars/avatar-filename.jpg",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"uploads",
+								"avatars",
+								"avatar-filename.jpg"
+							]
+						},
+						"description": "Accede directamente a un archivo de avatar. Reemplaza 'avatar-filename.jpg' con el nombre real del archivo."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints del sistema para verificación y acceso a recursos."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "post_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "activation_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "activation_url",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

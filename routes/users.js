@@ -2,15 +2,20 @@ const express = require('express');
 const router = express.Router();
 const {
   createUser,
+  activateUser,
   loginUser,
   getAllUsers,
   getUserProfile
 } = require('../controllers/userController');
 
 const { authenticateToken } = require('../middleware/auth');
+const { uploadAvatar } = require('../middleware/upload');
 
-// POST /api/users - Registrar un nuevo usuario
-router.post('/', createUser);
+// POST /api/users - Registrar un nuevo usuario (con avatar opcional)
+router.post('/', uploadAvatar, createUser);
+
+// GET /api/users/activate/:token - Activar cuenta de usuario
+router.get('/activate/:token', activateUser);
 
 // POST /api/login - Login de usuario
 router.post('/login', loginUser);

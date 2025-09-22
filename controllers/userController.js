@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const path = require('path');
 
 // Clave secreta para JWT
 const JWT_SECRET = process.env.JWT_SECRET || 'mi_clave_secreta_super_segura';
@@ -16,6 +18,11 @@ const createUser = async (req, res) => {
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      // Si hay archivo subido, eliminarlo ya que el registro falló
+      if (req.file) {
+        const fs = require('fs');
+        fs.unlinkSync(req.file.path);
+      }
       return res.status(400).json({
         message: 'El email ya está registrado'
       });
@@ -25,23 +32,48 @@ const createUser = async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    // Generar token de activación
+    const activationToken = crypto.randomBytes(32).toString('hex');
+
+    // Procesar avatar si se subió
+    let avatarFilename = null;
+    if (req.file) {
+      avatarFilename = req.file.filename;
+    }
+
     // Crear el nuevo usuario
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
       bio: bio || '',
-      active: true
+      avatar: avatarFilename,
+      activationToken: activationToken,
+      active: false
     });
 
     // Guardar en base de datos
     const savedUser = await newUser.save();
 
+    // Generar URL de activación
+    const activationUrl = `${req.protocol}://${req.get('host')}/api/users/activate/${activationToken}`;
+
     res.status(201).json({
-      message: 'Usuario creado exitosamente',
-      user: savedUser
+      message: 'Usuario creado exitosamente. Por favor, active su cuenta usando el enlace proporcionado.',
+      user: savedUser,
+      activationUrl: activationUrl
     });
   } catch (error) {
+    // Si hay error y se subió un archivo, eliminarlo
+    if (req.file) {
+      const fs = require('fs');
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.error('Error eliminando archivo:', unlinkError);
+      }
+    }
+
     // Error de validación
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(err => err.message);
@@ -58,6 +90,60 @@ const createUser = async (req, res) => {
       });
     }
 
+    res.status(500).json({
+      message: 'Error interno del servidor',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Activar cuenta de usuario
+ * GET /api/users/activate/:token
+ */
+const activateUser = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Buscar usuario por token de activación
+    const user = await User.findOne({ activationToken: token });
+
+    if (!user) {
+      return res.status(400).json({
+        message: 'Token de activación inválido o expirado'
+      });
+    }
+
+    // Verificar si ya está activo
+    if (user.active) {
+      return res.status(200).json({
+        message: 'La cuenta ya está activada',
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          active: user.active
+        }
+      });
+    }
+
+    // Activar el usuario y limpiar el token
+    user.active = true;
+    user.activationToken = null;
+    await user.save();
+
+    res.status(200).json({
+      message: 'Cuenta activada exitosamente. Ya puede iniciar sesión.',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        active: user.active,
+        activatedAt: new Date()
+      }
+    });
+
+  } catch (error) {
     res.status(500).json({
       message: 'Error interno del servidor',
       error: error.message
@@ -181,6 +267,7 @@ const getUserProfile = async (req, res) => {
 
 module.exports = {
   createUser,
+  activateUser,
   loginUser,
   getAllUsers,
   getUserProfile
